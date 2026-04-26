@@ -76,6 +76,43 @@ class Gate:
 
         return Signal(False)
 
+class Switch:
+
+    """
+    Switcher, beginning of the logical chain
+    """
+
+    def __init__(self, value = False, wire = None):
+        self.status = Signal(value)
+        self.wire = wire
+        self.wire.status = self.status
+
+class OUT:
+
+    """
+    Ending of the logical gate
+    """
+
+    def __init__(self, wire = None):
+        self.wire = wire
+        self.status = self.wire.status
+
+    def __repr__(self):
+        return f"output={self.status}"
+
+class COPY:
+
+    """
+    Router for distributing the same signal over some wires amount
+    """
+
+    def __init__(self, wire = None, wires: list = None):
+        self.wire = wire
+        self.wires = wires
+
+        for w in self.wires:
+            w.status = self.wire.status
+
 class NOT(Gate):
 
     """
@@ -107,6 +144,22 @@ class AND(Gate):
         result = wire_1.status and wire_2.status
         return Signal(result)
 
+class NAND(Gate):
+
+    """
+    NAND Gate
+    """
+
+    def evaluate(self):
+
+        """
+        Evaluate output signal value
+        """
+
+        wire_1, wire_2 = self.input_w
+        result = wire_1.status and wire_2.status
+        return Signal(not result)
+
 class OR(Gate):
 
     """
@@ -122,6 +175,22 @@ class OR(Gate):
         wire_1, wire_2 = self.input_w
         result = wire_1.status or wire_2.status
         return Signal(result)
+
+class NOR(Gate):
+
+    """
+    NOR Gate
+    """
+
+    def evaluate(self):
+
+        """
+        Evaluate output signal value
+        """
+
+        wire_1, wire_2 = self.input_w
+        result = wire_1.status or wire_2.status
+        return Signal(not result)
 
 class XOR(Gate):
 
@@ -153,39 +222,6 @@ class XNOR(Gate):
 
         wire_1, wire_2 = self.input_w
         result = (wire_1.status or wire_2.status) and (not wire_1.status or not wire_2.status)
-        return Signal(not result)
-
-
-class NOR(Gate):
-
-    """
-    NOR Gate
-    """
-
-    def evaluate(self):
-
-        """
-        Evaluate output signal value
-        """
-
-        wire_1, wire_2 = self.input_w
-        result = wire_1.status or wire_2.status
-        return Signal(not result)
-
-class NAND(Gate):
-
-    """
-    NAND Gate
-    """
-
-    def evaluate(self):
-
-        """
-        Evaluate output signal value
-        """
-
-        wire_1, wire_2 = self.input_w
-        result = wire_1.status and wire_2.status
         return Signal(not result)
 
 w1, w2, w3 = Wire(), Wire(), Wire()
