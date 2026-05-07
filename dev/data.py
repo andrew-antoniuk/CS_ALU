@@ -1,42 +1,84 @@
 """
 Main classes for ALU dev.data
 """
-class Signal:
+
+from uuid import uuid4
+
+class Circuit:
 
     """
-    Boolean Signal 0 or 1
+    The whole circuit
     """
 
-    def __init__(self, value: bool):
+    def __init__(self):
+        self.components = []
+        self.wires = []
 
-        if not isinstance(value, bool):
-            raise TypeError("Incorrect input for boolean value")
+    def add_component(self, comp):
 
-        self.value = value
+        """
+        Docstring for add_component
+        """
 
-    def __repr__(self):
-        return f"Signal(value={self.value})"
+        self.components.append(comp)
 
-    def __eq__(self, other):
-        return self.value == other.value
+    def add_wire(self, wire):
 
-    def __bool__(self):
-        return self.value
+        """
+        Docstring for add_wire
+        """
 
-class Wire:
+        self.wires.append(wire)
+
+    def simulate(self):
+
+        """
+        Run and update
+        """
+
+        for comp in self.components:
+            comp.update()
+
+    def clear(self):
+
+        """
+        Clear the circuit
+        """
+
+        self.components.clear()
+        self.wires.clear()
+
+class Component:
+
+    """
+    IDs store
+    """
+
+    def __init__(self):
+        self.id = str(uuid4())
+        self.position = (0, 0)
+        self.label = "COMP"
+
+class Wire(Component):
 
     """
     Docstring for Wire
     """
 
     def __init__(self):
-        self._status = Signal(False)
+        super().__init__()
         # For propagation
         self.destinations = []
-        # self.start = i
-        # self.end = o
+        self._status = False
+        self.label = "WIRE"
+
     @property
     def status(self):
+
+        """
+        Getter for status
+        """
+
         return self._status
 
     @status.setter
@@ -50,13 +92,15 @@ class Wire:
         # Notify all connected gates that the signal has changed
         for gate in self.destinations:
             gate.update()
-class Gate:
+
+class Gate(Component):
 
     """
     Gate Father Class
     """
 
     def __init__(self, w_in: list, w_out = None):
+        super().__init__()
         # Save a reference to the input wires(list of objects)
         self.input_w = w_in
         # Save a reference to the output wire where will pass the result
@@ -72,6 +116,8 @@ class Gate:
         # We also store a copy of the result in self.out for internal use.
         self.output_w.status = self.out = self.evaluate()
 
+        self.label = "GATE"
+
     def __repr__(self):
         return f"input_wires={self.input_w}, output_wire={self.output_w}, out_value={self.out}"
 
@@ -81,7 +127,7 @@ class Gate:
         Evaluate output signal value
         """
 
-        return Signal(False)
+        return False
 
     def update(self):
         """
@@ -91,23 +137,26 @@ class Gate:
         # We update the output conductor - this will start the next wave of propagation
         self.output_w.status = new_val
 
-class Switch:
+class Switch(Component):
 
     """
     Switcher, beginning of the logical chain
     """
 
     def __init__(self, value = False, wire = None):
-        self._status = Signal(value)
+        super().__init__()
+        self._status = value
         self.wire = wire
+        self.label = "SWITCH"
         # Initialize the conductor with an initial value
         if self.wire:
             self.wire.status = self._status
+
     def turn_on(self):
         """
         Turn on a Signal(True)
         """
-        self._status = Signal(True)
+        self._status = True
         if self.wire:
             self.wire.status = self._status
 
@@ -115,7 +164,7 @@ class Switch:
         """
         Turns off a Signal(False)
         """
-        self._status = Signal(False)
+        self._status = False
         if self.wire:
             self.wire.status = self._status
 
@@ -124,46 +173,59 @@ class Switch:
         Flip to opposite status
         """
         new_val = not self._status.value
-        self._status = Signal(new_val)
+        self._status = new_val
         if self.wire:
             self.wire.status = self._status
-class OUT:
+
+class Out(Component):
 
     """
     Ending of the logical gate
     """
 
     def __init__(self, wire = None):
+        super().__init__()
         self.wire = wire
-        self._status = Signal(False)
-        self.destinations = []
+        self._status = False
+        self.label = "OUT"
         if self.wire:
             self.wire.destinations.append(self)
             self.update()
+
     def update(self):
+
         """
         Called when input wire signal changes
         """
+
         self._status = self.wire.status
         # Notify all components connected to this output
-        for dest in self.destinations:
-            dest.update()
+
     @property
     def status(self):
+
+        """
+        Docstring for status
+        """
+
         # Always returns the current state of the conductor it is connected to
         return self._status
+
     def __repr__(self):
         return f"output={self.status}"
 
-class COPY:
+class COPY(Component):
 
     """
     Router for distributing the same signal over some wires amount
     """
 
     def __init__(self, wire = None, wires: list = None):
+        super().__init__()
         self.input_w = [wire]
         self.outputs = wires
+
+        self.label = "COPY"
 
         wire.destinations.append(self)
         self.update()
@@ -188,6 +250,10 @@ class NOT(Gate):
     NOT Gate
     """
 
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "NOT"
+
     def evaluate(self):
 
         """
@@ -195,13 +261,17 @@ class NOT(Gate):
         """
 
         wire = bool(self.input_w[0].status)
-        return Signal(not wire)
+        return not wire
 
 class AND(Gate):
 
     """
     AND Gate
     """
+
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "AND"
 
     def evaluate(self):
 
@@ -212,13 +282,17 @@ class AND(Gate):
         wire_1 = bool(self.input_w[0].status)
         wire_2 = bool(self.input_w[1].status)
         result = bool(wire_1 and wire_2)
-        return Signal(result)
+        return result
 
 class NAND(Gate):
 
     """
     NAND Gate
     """
+
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "NAND"
 
     def evaluate(self):
 
@@ -229,7 +303,7 @@ class NAND(Gate):
         wire_1 = bool(self.input_w[0].status)
         wire_2 = bool(self.input_w[1].status)
         result = wire_1 and wire_2
-        return Signal(not result)
+        return not result
 
 class OR(Gate):
 
@@ -237,6 +311,10 @@ class OR(Gate):
     OR Gate
     """
 
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "OR"
+
     def evaluate(self):
 
         """
@@ -246,7 +324,7 @@ class OR(Gate):
         wire_1 = bool(self.input_w[0].status)
         wire_2 = bool(self.input_w[1].status)
         result = wire_1 or wire_2
-        return Signal(result)
+        return result
 
 class NOR(Gate):
 
@@ -254,6 +332,10 @@ class NOR(Gate):
     NOR Gate
     """
 
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "NOR"
+
     def evaluate(self):
 
         """
@@ -263,7 +345,7 @@ class NOR(Gate):
         wire_1 = bool(self.input_w[0].status)
         wire_2 = bool(self.input_w[1].status)
         result = wire_1 or wire_2
-        return Signal(not result)
+        return not result
 
 class XOR(Gate):
 
@@ -271,6 +353,10 @@ class XOR(Gate):
     XOR Gate
     """
 
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "XOR"
+
     def evaluate(self):
 
         """
@@ -280,7 +366,7 @@ class XOR(Gate):
         wire_1 = bool(self.input_w[0].status)
         wire_2 = bool(self.input_w[1].status)
         result = (wire_1 or wire_2) and (not wire_1 or not wire_2)
-        return Signal(result)
+        return result
 
 class XNOR(Gate):
 
@@ -288,6 +374,10 @@ class XNOR(Gate):
     XNOR Gate
     """
 
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "XNOR"
+
     def evaluate(self):
 
         """
@@ -297,4 +387,4 @@ class XNOR(Gate):
         wire_1 = bool(self.input_w[0].status)
         wire_2 = bool(self.input_w[1].status)
         result = (wire_1 or wire_2) and (not wire_1 or not wire_2)
-        return Signal(not result)
+        return not result

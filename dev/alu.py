@@ -1,4 +1,9 @@
-from data import Wire, Signal, AND, OR, NOT, COPY, Switch, OUT
+"""
+Docstring for dev.alu
+Don't know what it exactly is
+"""
+
+from data import Wire, AND, OR, NOT, COPY, Switch
 
 def xor_gate(wa, wb, w_out):
     """
@@ -213,4 +218,3 @@ def demo_counter():
         print(val)
         if val == 0:
             break
-
