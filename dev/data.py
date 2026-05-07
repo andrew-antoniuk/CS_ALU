@@ -37,7 +37,8 @@ class Circuit:
         """
 
         for comp in self.components:
-            comp.update()
+            if hasattr(comp, "update"):
+                comp.update()
 
     def clear(self):
 
@@ -114,8 +115,7 @@ class Gate(Component):
         # Perform the initial logic gate evaluation (evaluate)
         # and write the result to the output conductor status (output_w.status).
         # We also store a copy of the result in self.out for internal use.
-        self.output_w.status = self.out = self.evaluate()
-
+        self.out = False
         self.label = "GATE"
 
     def __repr__(self):
@@ -135,7 +135,8 @@ class Gate(Component):
         """
         new_val = self.evaluate()
         # We update the output conductor - this will start the next wave of propagation
-        self.output_w.status = new_val
+        if self.output_w:
+            self.output_w.status = new_val
 
 class Switch(Component):
 
@@ -169,10 +170,12 @@ class Switch(Component):
             self.wire.status = self._status
 
     def flip(self):
+
         """
         Flip to opposite status
         """
-        new_val = not self._status.value
+
+        new_val = not self._status
         self._status = new_val
         if self.wire:
             self.wire.status = self._status
