@@ -2,6 +2,8 @@
 Docstring for dev.items
 """
 
+# pylint: skip-file
+
 from PyQt5.QtWidgets import (
     QGraphicsRectItem,
     QGraphicsItem,
@@ -14,7 +16,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QBrush, QPen, QPixmap
 from PyQt5.QtCore import Qt, QLineF, QTimer
-from data import AND, Wire
+from data import Wire, AND, OR
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -179,6 +181,43 @@ class AndGateItem(GateItem):
         self.input_pins = [in1, in2]
         self.output_pins = [out]
 
+class OrGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-or-96.png"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+        in2 = PinItem(self)
+
+        wire1 = Wire()
+        wire2 = Wire()
+        wire_out = Wire()
+
+        self.gate = OR(
+            [wire1, wire2],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        in2.logic_wire = wire2
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+        in2.setPos(0, 45)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1, in2]
+        self.output_pins = [out]
+
 class TempWire(QGraphicsLineItem):
 
     def __init__(self, start_pos):
@@ -233,13 +272,21 @@ class CircuitScene(QGraphicsScene):
 
             item = AndGateItem()
 
-            item.setPos(event.scenePos())
+        elif self.current_tool == "SWITCH":
 
-            self.addItem(item)
+            item = SwitchItem()
 
+        elif self.current_tool == "LED":
+
+            item = LedItem()
+
+        else:
+            super().mousePressEvent(event)
             return
 
-        super().mousePressEvent(event)
+        item.setPos(event.scenePos())
+
+        self.addItem(item)
 
     def mouseMoveEvent(self, event):
 
@@ -261,19 +308,11 @@ class CircuitScene(QGraphicsScene):
             if isinstance(item, PinItem):
 
                 if item == self.start_pin:
-                    self.removeItem(self.temp_wire)
-
-                    self.temp_wire = None
-                    self.start_pin = None
-
+                    self.cancel_wire()
                     return
 
                 if item.is_output == self.start_pin.is_output:
-                    self.removeItem(self.temp_wire)
-
-                    self.temp_wire = None
-                    self.start_pin = None
-
+                    self.cancel_wire()
                     return
 
                 wire = WireItem(self.start_pin, item)
@@ -286,6 +325,13 @@ class CircuitScene(QGraphicsScene):
             self.start_pin = None
 
         super().mouseReleaseEvent(event)
+
+    def cancel_wire(self):
+
+        self.removeItem(self.temp_wire)
+
+        self.temp_wire = None
+        self.start_pin = None
 
     def update_simulation(self):
 
@@ -317,8 +363,10 @@ class SwitchItem(GateItem):
         self.state = 0
 
     def create_pins(self):
+        logic_wire = Wire()
 
         out = PinItem(self, is_output=True)
+        out.logic_wire = logic_wire
 
         out.setPos(self.pixmap().width(), 20)
 
@@ -341,7 +389,7 @@ class LedItem(QGraphicsEllipseItem):
         self.input_pin = PinItem(self)
 
         self.input_pin.setPos(-10, 10)
-
+        self.input_pin.logic_wire = Wire()
         self.refresh()
 
     def refresh(self):
