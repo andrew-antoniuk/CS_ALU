@@ -1,18 +1,6 @@
 """
 Main classes for ALU dev.data
 """
-
-# from dataclasses import dataclass
-
-# @dataclass
-# class Signal:
-
-#     """
-#     Boolean Signal 0 or 1
-#     """
-
-#     value: bool
-
 class Signal:
 
     """
@@ -34,12 +22,6 @@ class Signal:
 
     def __bool__(self):
         return self.value
-
-    # def __and__(self, other):
-    #     return self.value and other.value
-
-    # def __or__(self, other):
-    #     return self.value or other.value
 
 class Wire:
 
@@ -105,7 +87,6 @@ class Gate:
         """
         The method that is called by the conductor when the signal changes
         """
-        
         new_val = self.evaluate()
         # We update the output conductor - this will start the next wave of propagation
         self.output_w.status = new_val
@@ -154,11 +135,23 @@ class OUT:
 
     def __init__(self, wire = None):
         self.wire = wire
-        self.status = self.wire.status
+        self._status = Signal(False)
+        self.destinations = []
+        if self.wire:
+            self.wire.destinations.append(self)
+            self.update()
+    def update(self):
+        """
+        Called when input wire signal changes
+        """
+        self._status = self.wire.status
+        # Notify all components connected to this output
+        for dest in self.destinations:
+            dest.update()
     @property
     def status(self):
         # Always returns the current state of the conductor it is connected to
-        return self.wire.status if self.wire else Signal(False)
+        return self._status
     def __repr__(self):
         return f"output={self.status}"
 
@@ -192,7 +185,7 @@ class COPY:
 class NOT(Gate):
 
     """
-    AND Gate
+    NOT Gate
     """
 
     def evaluate(self):
@@ -305,9 +298,3 @@ class XNOR(Gate):
         wire_2 = bool(self.input_w[1].status)
         result = (wire_1 or wire_2) and (not wire_1 or not wire_2)
         return Signal(not result)
-
-w1, w2, w3 = Wire(), Wire(), Wire()
-w1.status, w2.status = Signal(True), Signal(True)
-
-op = XOR([w1, w2], w3)
-print(w3.status)
