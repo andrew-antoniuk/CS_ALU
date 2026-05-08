@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtGui
 from _code import Ui_Simulator
 from items import CircuitScene
+from data import Circuit
 
 class SimulatorWindow(QMainWindow):
 
@@ -33,6 +34,8 @@ class SimulatorWindow(QMainWindow):
         self.ui.actionCursor.triggered.connect(
             self.reset_tool
         )
+
+        self.elements = Circuit()
 
     def select_tool(self, item):
 
