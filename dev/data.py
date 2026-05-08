@@ -279,8 +279,11 @@ class NOT(Gate):
         Evaluate output signal value
         """
 
-        wire = bool(self.input_w[0].status)
-        return not wire
+        if not self.input_w:
+            return True
+        # Ensure we are checking the status of the wire object
+        wire_status = bool(self.input_w[0].status)
+        return not wire_status
 
 class BUF(Gate):
 

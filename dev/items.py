@@ -705,24 +705,51 @@ class CircuitScene(QGraphicsScene):
 
     def finish_wire(self, end_pin):
 
+        # if not self.start_pin:
+            # return
+
+        # if end_pin == self.start_pin:
+        #     self.cancel_wire()
+        #     return
+
+        # if end_pin.is_output == self.start_pin.is_output:
+        #     self.cancel_wire()
+        #     return
+
+        # wire = WireItem(self.start_pin, end_pin)
+
+        # end_pin.logic_wire = self.start_pin.logic_wire
+
+        # self.addItem(wire)
+
+        # self.removeItem(self.temp_wire)
+
+        # self.temp_wire = None
+        # self.start_pin = None
+
         if not self.start_pin:
             return
 
-        if end_pin == self.start_pin:
-            self.cancel_wire()
-            return
-
-        if end_pin.is_output == self.start_pin.is_output:
-            self.cancel_wire()
-            return
-
         wire = WireItem(self.start_pin, end_pin)
-
         end_pin.logic_wire = self.start_pin.logic_wire
 
+        if hasattr(end_pin.parent_gate, "gate") and end_pin.parent_gate.gate:
+            logic_gate = end_pin.parent_gate.gate
+
+            # Find which input index this pin represents (0, 1, etc.)
+            if end_pin in end_pin.parent_gate.input_pins:
+                idx = end_pin.parent_gate.input_pins.index(end_pin)
+
+                # Update the logic gate's wire reference
+                logic_gate.input_w[idx] = self.start_pin.logic_wire
+
+                # Register the gate to listen for updates on the new wire
+                self.start_pin.logic_wire.destinations.append(logic_gate)
+
+                # Trigger an immediate update to reflect the current state
+                logic_gate.update()
+
         self.addItem(wire)
-
         self.removeItem(self.temp_wire)
-
         self.temp_wire = None
         self.start_pin = None
