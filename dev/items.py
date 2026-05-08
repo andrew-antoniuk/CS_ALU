@@ -604,15 +604,14 @@ class ALUItem(GateItem):
         op1.setPos(-40, 60)
         op2.setPos(0, 60)
 
-        out4.setPos(00, 150)
-        out3.setPos(50, 150)
-        out2.setPos(90, 150)
-        out1.setPos(130, 150)
+        out1.setPos(00, 150)
+        out2.setPos(50, 150)
+        out3.setPos(90, 150)
+        out4.setPos(130, 150)
 
         self.input_pins = [
             in1, in2, in3, in4,
-            in5, in6, in7, in8,
-            op1, op2
+            in5, in6, in7, in8
         ]
 
         self.output_pins = [out1, out2, out3, out4]
