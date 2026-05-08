@@ -38,6 +38,8 @@ class Ui_Simulator(object):
         self.statusbar = QtWidgets.QStatusBar(Simulator)
         self.statusbar.setObjectName("statusbar")
         Simulator.setStatusBar(self.statusbar)
+
+        # Toolbars
         self.toolBar_2 = QtWidgets.QToolBar(Simulator)
         self.toolBar_2.setObjectName("toolBar_2")
         Simulator.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar_2)
@@ -47,6 +49,8 @@ class Ui_Simulator(object):
         self.toolBar = QtWidgets.QToolBar(Simulator)
         self.toolBar.setObjectName("toolBar")
         Simulator.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+
+        # Dock Widget and List
         self.dockWidget = QtWidgets.QDockWidget(Simulator)
         self.dockWidget.setObjectName("dockWidget")
         self.dockWidgetContents = QtWidgets.QWidget()
@@ -55,127 +59,98 @@ class Ui_Simulator(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.listWidget = QtWidgets.QListWidget(self.dockWidgetContents)
         self.listWidget.setObjectName("listWidget")
-        item = QtWidgets.QListWidgetItem()
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/icons8-toggle-on-90.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("images/0.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon1)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("images/1.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon2)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("images/icons8-light-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon3)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-buffer-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon4)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-not-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon5)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-and-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon6)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-nand-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon7)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-or-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon8)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-nor-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon9)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-xor-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon10)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon11 = QtGui.QIcon()
-        icon11.addPixmap(QtGui.QPixmap("images/icons8-logic-gate-xnor-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon11)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        font = QtGui.QFont()
-        font.setPointSize(8)
-        font.setBold(True)
-        font.setWeight(75)
-        item.setFont(font)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("images/bus_merger2.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon12)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap("images/bus_ripper2.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon13)
-        self.listWidget.addItem(item)
-        item = QtWidgets.QListWidgetItem()
-        icon14 = QtGui.QIcon()
-        icon14.addPixmap(QtGui.QPixmap("images/alu.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item.setIcon(icon14)
-        self.listWidget.addItem(item)
+
+        # List Items (Icons and Setup)
+        icon_paths = [
+            "images/icons8-toggle-on-90.png", "images/0.png", "images/1.png",
+            "images/icons8-light-96.png", "images/icons8-logic-gate-buffer-96.png",
+            "images/icons8-logic-gate-not-96.png", "images/icons8-logic-gate-and-96.png",
+            "images/icons8-logic-gate-nand-96.png", "images/icons8-logic-gate-or-96.png",
+            "images/icons8-logic-gate-nor-96.png", "images/icons8-logic-gate-xor-96.png",
+            "images/icons8-logic-gate-xnor-96.png"
+        ]
+
+        for path in icon_paths:
+            item = QtWidgets.QListWidgetItem()
+            icon = QtGui.QIcon()
+            icon.addPixmap(QtGui.QPixmap(path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            item.setIcon(icon)
+            self.listWidget.addItem(item)
+
+        # Separators and Complex Blocks
+        for _ in range(3):
+            item = QtWidgets.QListWidgetItem()
+            if _ == 1: # Index 13 in total
+                font = QtGui.QFont()
+                font.setPointSize(8)
+                font.setBold(True)
+                font.setWeight(75)
+                item.setFont(font)
+            self.listWidget.addItem(item)
+
+        # Complex Block Icons
+        complex_icons = ["images/bus_merger2.png", "images/bus_ripper2.png", "images/alu.png"]
+        for path in complex_icons:
+            item = QtWidgets.QListWidgetItem()
+            icon = QtGui.QIcon()
+            icon.addPixmap(QtGui.QPixmap(path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            item.setIcon(icon)
+            self.listWidget.addItem(item)
+
         self.verticalLayout.addWidget(self.listWidget)
         self.dockWidget.setWidget(self.dockWidgetContents)
         Simulator.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockWidget)
+
+        # Actions
         self.actionCut = QtWidgets.QAction(Simulator)
         self.actionCut.setCheckable(True)
         icon15 = QtGui.QIcon()
         icon15.addPixmap(QtGui.QPixmap("../images/cut.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionCut.setIcon(icon15)
         self.actionCut.setObjectName("actionCut")
+
         self.actionUndo = QtWidgets.QAction(Simulator)
         icon16 = QtGui.QIcon()
         icon16.addPixmap(QtGui.QPixmap("../images/icons8-undo-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionUndo.setIcon(icon16)
         self.actionUndo.setObjectName("actionUndo")
+
         self.actionRedo = QtWidgets.QAction(Simulator)
         icon17 = QtGui.QIcon()
         icon17.addPixmap(QtGui.QPixmap("../images/icons8-redo-96.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionRedo.setIcon(icon17)
         self.actionRedo.setObjectName("actionRedo")
+
         self.actionCopy = QtWidgets.QAction(Simulator)
         icon18 = QtGui.QIcon()
         icon18.addPixmap(QtGui.QPixmap("../images/copy.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionCopy.setIcon(icon18)
         self.actionCopy.setObjectName("actionCopy")
+
         self.actionCursor = QtWidgets.QAction(Simulator)
         icon19 = QtGui.QIcon()
         icon19.addPixmap(QtGui.QPixmap("../images/cursor.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionCursor.setIcon(icon19)
         self.actionCursor.setObjectName("actionCursor")
+
+        # New actions from TEMP.py
+        self.actionOpen = QtWidgets.QAction(Simulator)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionSave = QtWidgets.QAction(Simulator)
+        self.actionSave.setObjectName("actionSave")
+
+        # Menu Assignments
         self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionSave)
+
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuools.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+
+        # Toolbar Assignments
         self.toolBar.addAction(self.actionCut)
         self.toolBar.addAction(self.actionUndo)
         self.toolBar.addAction(self.actionRedo)
@@ -197,6 +172,7 @@ class Ui_Simulator(object):
         self.toolBar_3.setWindowTitle(_translate("Simulator", "toolBar_3"))
         self.toolBar.setWindowTitle(_translate("Simulator", "toolBar"))
         self.dockWidget.setWindowTitle(_translate("Simulator", "Logic Gates"))
+
         __sortingEnabled = self.listWidget.isSortingEnabled()
         self.listWidget.setSortingEnabled(False)
         item = self.listWidget.item(0)
@@ -208,6 +184,7 @@ class Ui_Simulator(object):
         item = self.listWidget.item(3)
         item.setText(_translate("Simulator", "Bulb"))
         item = self.listWidget.item(4)
+        # Priority: _code.py "BUF Gate" over TEMP.py "Buffer"
         item.setText(_translate("Simulator", "BUF Gate"))
         item = self.listWidget.item(5)
         item.setText(_translate("Simulator", "NOT Gate"))
@@ -236,6 +213,7 @@ class Ui_Simulator(object):
         item = self.listWidget.item(17)
         item.setText(_translate("Simulator", "ALU"))
         self.listWidget.setSortingEnabled(__sortingEnabled)
+
         self.actionCut.setText(_translate("Simulator", "Cut"))
         self.actionCut.setToolTip(_translate("Simulator", "Cut selected objects"))
         self.actionUndo.setText(_translate("Simulator", "Undo"))
@@ -246,6 +224,11 @@ class Ui_Simulator(object):
         self.actionCopy.setToolTip(_translate("Simulator", "Copy the selected item"))
         self.actionCursor.setText(_translate("Simulator", "Cursor"))
         self.actionCursor.setToolTip(_translate("Simulator", "Cursor"))
+
+        self.actionOpen.setText(_translate("Simulator", "Open"))
+        self.actionOpen.setShortcut(_translate("Simulator", "Ctrl+O"))
+        self.actionSave.setText(_translate("Simulator", "Save"))
+        self.actionSave.setShortcut(_translate("Simulator", "Ctrl+S"))
 
 
 if __name__ == "__main__":

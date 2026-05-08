@@ -3,32 +3,58 @@ Main classes for ALU dev.data
 """
 
 from uuid import uuid4
+import json
 
 class Circuit:
 
-    """
-    The whole circuit
-    """
-
     def __init__(self):
+
         self.components = []
         self.wires = []
 
     def add_component(self, comp):
 
-        """
-        Docstring for add_component
-        """
-
-        self.components.append(comp)
+        if comp not in self.components:
+            self.components.append(comp)
 
     def add_wire(self, wire):
 
-        """
-        Docstring for add_wire
-        """
+        if wire not in self.wires:
+            self.wires.append(wire)
 
-        self.wires.append(wire)
+    def clear(self):
+
+        self.components.clear()
+        self.wires.clear()
+
+    def to_dict(self):
+
+        return {
+            "components": [
+                comp.to_dict()
+                for comp in self.components
+            ],
+            "wires": [
+                wire.to_dict()
+                for wire in self.wires
+                if wire.to_dict() is not None
+            ]
+        }
+
+    def save(self, filename):
+
+        with open(filename, "w", encoding="utf-8") as file:
+            json.dump(
+                self.to_dict(),
+                file,
+                indent=4
+            )
+
+    @staticmethod
+    def load(filename):
+
+        with open(filename, "r", encoding="utf-8") as file:
+            return json.load(file)
 
     def simulate(self):
 
@@ -39,15 +65,6 @@ class Circuit:
         for comp in self.components:
             if hasattr(comp, "update"):
                 comp.update()
-
-    def clear(self):
-
-        """
-        Clear the circuit
-        """
-
-        self.components.clear()
-        self.wires.clear()
 
 class Component:
 
@@ -105,10 +122,13 @@ class Wire(Component):
             gate.update()
 
     def to_dict(self):
-        if len(self.destinations) == 2:
-            gate1, gate2 = self.destinations
-            return {"from": gate1.id, "to": gate2.id}
-        return None
+
+        data = {"id": self.id, "destinations": []}
+
+        for gate in self.destinations:
+            data["destinations"].append(gate.id)
+
+        return data
 
 class Gate(Component):
 
@@ -154,6 +174,16 @@ class Gate(Component):
         if self.output_w:
             self.output_w.status = new_val
 
+    def to_dict(self):
+
+        x, y = self.position
+
+        return {
+            "type": self.label,
+            "id": self.id,
+            "position": [x, y]
+        }
+
 class Switch(Component):
 
     """
@@ -196,6 +226,17 @@ class Switch(Component):
         if self.wire:
             self.wire.status = self._status
 
+    def to_dict(self):
+
+        x, y = self.position
+
+        return {
+            "type": "SWITCH",
+            "id": self.id,
+            "position": [x, y],
+            "state": self._status
+        }
+
 class ONE(Component):
 
     """
@@ -210,6 +251,16 @@ class ONE(Component):
         # Initialize the conductor with an initial value
         if self._wire:
             self._wire.status = self._status
+
+    def to_dict(self):
+
+        x, y = self.position
+
+        return {
+            "type": "ONE",
+            "id": self.id,
+            "position": [x, y]
+        }
 
     @property
     def wire(self):
@@ -240,6 +291,16 @@ class ZERO(Component):
         # Initialize the conductor with an initial value
         if self._wire:
             self._wire.status = self._status
+
+    def to_dict(self):
+
+        x, y = self.position
+
+        return {
+            "type": "ZERO",
+            "id": self.id,
+            "position": [x, y]
+        }
 
     @property
     def wire(self):

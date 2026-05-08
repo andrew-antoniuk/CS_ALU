@@ -56,6 +56,10 @@ class PinItem(QGraphicsEllipseItem):
 
         if self.logic_wire:
             self.logic_wire.status = value
+            # self.logic_wire.source_pin = self
+
+        # if self.logic_wire:
+        #     self.logic_wire.source_pin = self
 
         for wire in self.connected_wires:
             wire.update_state()
@@ -620,14 +624,16 @@ class TempWire(QGraphicsLineItem):
 
 class CircuitScene(QGraphicsScene):
 
-    def __init__(self):
+    def __init__(self, circuit = None):
 
         super().__init__()
+        self.circuit = circuit
 
         self.temp_wire = None
         self.start_pin = None
         self.current_tool = None
         self.timer = QTimer()
+
 
         self.timer.timeout.connect(
             self.update_simulation
@@ -691,6 +697,18 @@ class CircuitScene(QGraphicsScene):
         item.setPos(event.scenePos())
 
         self.addItem(item)
+
+        if self.circuit:
+
+            if hasattr(item, "gate") and item.gate:
+
+                item.gate.position = (
+                    event.scenePos().x(),
+                    event.scenePos().y()
+                )
+
+                self.circuit.add_component(item.gate)
+
         self.current_tool = None
 
         super().mousePressEvent(event)
@@ -804,6 +822,9 @@ class CircuitScene(QGraphicsScene):
 
                 # Trigger an immediate update to reflect the current state
                 logic_gate.update()
+
+        if self.circuit:
+            self.circuit.add_wire(self.start_pin.logic_wire)
 
         self.addItem(wire)
         self.removeItem(self.temp_wire)
