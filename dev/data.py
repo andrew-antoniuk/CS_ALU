@@ -550,3 +550,100 @@ class XNOR(Gate):
         wire_2 = bool(self.input_w[1].status)
         result = (wire_1 or wire_2) and (not wire_1 or not wire_2)
         return not result
+
+# =====================
+# ===   ALU BLOCK   ===
+# =====================
+
+class ALU(Gate):
+
+    """
+    ALU4Bit
+    """
+
+    def __init__(self, w_in, w_out, w_op):
+        super().__init__(w_in, w_out)
+        self.label = "ALU"
+        self.wires_op = w_op
+        for w in self.wires_op:
+            w.destinations.append(self)
+
+        self.evaluate()
+
+    def update(self):
+        self.evaluate()
+
+    def evaluate(self):
+
+        """
+        Evaluate output signal value
+
+        AND = 00
+        OR = 01
+        ADD = 10
+        SUB = 11
+        """
+
+        def compute(a, b, opcode):
+            """
+            Simulates a 4-bit ALU with string inputs/outputs.
+            a_str, b_str: 4-digit binary strings (e.g., "1010")
+            opcode: 2-bit operation code string
+            Returns: A 4-digit binary string
+            """
+            a = int(a, 2)
+            b = int(b, 2)
+
+            # Ensure inputs are treated as 4-bit
+            a &= 0xF
+            b &= 0xF
+
+            result = 0
+            carry = 0
+
+            match opcode:
+                case "00": # AND
+                    result = a & b
+                case "01": # OR
+                    result = a | b
+                case "10": # ADD
+                    result = a + b
+                    if result > 15:
+                        carry = 1
+                case "11": # SUB
+                    result = a - b
+                    if result < 0:
+                        carry = 1
+                case _:
+                    result = 0
+
+            result &= 0xF
+            return format(result, "04b"), carry
+
+        wire_in1 = int(self.input_w[0].status)
+        wire_in2 = int(self.input_w[1].status)
+        wire_in3 = int(self.input_w[2].status)
+        wire_in4 = int(self.input_w[3].status)
+
+        wire_in5 = int(self.input_w[4].status)
+        wire_in6 = int(self.input_w[5].status)
+        wire_in7 = int(self.input_w[6].status)
+        wire_in8 = int(self.input_w[7].status)
+
+        wire_op1 = int(self.wires_op[0].status)
+        wire_op2 = int(self.wires_op[1].status)
+
+        s1 = f"{wire_in4}{wire_in3}{wire_in2}{wire_in1}"
+        s2 = f"{wire_in8}{wire_in7}{wire_in6}{wire_in5}"
+        op = f"{wire_op2}{wire_op1}"
+
+        (wire_out1, wire_out2, wire_out3, wire_out4), _ = compute(s1, s2, op)
+        wire_out4 = wire_out4 == "1"
+        wire_out3 = wire_out3 == "1"
+        wire_out2 = wire_out2 == "1"
+        wire_out1 = wire_out1 == "1"
+
+        x = (wire_out1, wire_out2, wire_out3, wire_out4)
+
+        for k in range(4):
+            self.output_w[k].status = x[k]

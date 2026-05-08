@@ -20,7 +20,8 @@ from items import (
     XnorGateItem,
     SwitchItem,
     ZeroItem,
-    OneItem
+    OneItem,
+    ALUItem
 )
 from data import Circuit
 
@@ -129,6 +130,9 @@ class SimulatorWindow(QMainWindow):
                 case "ZERO":
                     item = ZeroItem()
 
+                case "ALU":
+                    item = ALUItem()
+
             if item:
 
                 x, y = comp["position"]
@@ -183,6 +187,10 @@ class SimulatorWindow(QMainWindow):
 
             case "ONE":
                 self.scene.current_tool = "ONE"
+
+            case "ALU":
+                self.scene.current_tool = "ALU"
+
 
             case "Bulb":
                 self.scene.current_tool = "LED"

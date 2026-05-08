@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QBrush, QPen, QPixmap
 from PyQt5.QtCore import Qt, QLineF, QTimer
-from data import Wire, AND, OR, NAND, XOR, NOT, BUF, NOR, XNOR, ZERO, ONE, Switch
+from data import Wire, AND, OR, NAND, XOR, NOT, BUF, NOR, XNOR, ZERO, ONE, Switch, ALU
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -522,6 +522,96 @@ class OneItem(GateItem):
         out.setPos(self.pixmap().width(), 30)
         self.output_pins = [out]
 
+class ALUItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/alu.png",
+            "ALU"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+        in2 = PinItem(self)
+        in3 = PinItem(self)
+        in4 = PinItem(self)
+        in5 = PinItem(self)
+        in6 = PinItem(self)
+        in7 = PinItem(self)
+        in8 = PinItem(self)
+
+        op1 = PinItem(self)
+        op2 = PinItem(self)
+
+        wire1 = Wire()
+        wire2 = Wire()
+        wire3 = Wire()
+        wire4 = Wire()
+        wire5 = Wire()
+        wire6 = Wire()
+        wire7 = Wire()
+        wire8 = Wire()
+
+        wire_out1 = Wire()
+        wire_out2 = Wire()
+        wire_out3 = Wire()
+        wire_out4 = Wire()
+
+        wire_op1 = Wire()
+        wire_op2 = Wire()
+
+        self.gate = ALU(
+            [wire1, wire2, wire3, wire4, wire5, wire6, wire7, wire8],
+            [wire_out1, wire_out2, wire_out3, wire_out4],
+            [wire_op1, wire_op2]
+        )
+
+        out1 = PinItem(self, is_output=True)
+        out2 = PinItem(self, is_output=True)
+        out3 = PinItem(self, is_output=True)
+        out4 = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        in2.logic_wire = wire2
+        in3.logic_wire = wire3
+        in4.logic_wire = wire4
+        in5.logic_wire = wire5
+        in6.logic_wire = wire6
+        in7.logic_wire = wire7
+        in8.logic_wire = wire8
+
+        op1.logic_wire = wire_op1
+        op2.logic_wire = wire_op2
+
+        out1.logic_wire = wire_out1
+        out2.logic_wire = wire_out2
+        out3.logic_wire = wire_out3
+        out4.logic_wire = wire_out4
+
+        in1.setPos(-80, -30)
+        in2.setPos(-50, -30)
+        in3.setPos(-20, -30)
+        in4.setPos(10, -30)
+
+        in5.setPos(80, -30)
+        in6.setPos(110, -30)
+        in7.setPos(140, -30)
+        in8.setPos(170, -30)
+
+        op1.setPos(-40, 60)
+        op2.setPos(0, 60)
+
+        out1.setPos(00, 150)
+        out2.setPos(50, 150)
+        out3.setPos(90, 150)
+        out4.setPos(130, 150)
+
+        self.input_pins = [in1, in2, in3, in4, in5, in6, in7, in8]
+        self.output_pins = [out1, out2, out3, out4]
+
 class SwitchItem(GateItem):
 
     def __init__(self):
@@ -686,6 +776,9 @@ class CircuitScene(QGraphicsScene):
 
             case "ONE":
                 item = OneItem()
+
+            case "ALU":
+                item = ALUItem()
 
             case "LED":
                 item = LedItem()
