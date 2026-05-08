@@ -394,13 +394,14 @@ class SwitchItem(GateItem):
         self.state = 0
 
     def create_pins(self):
-        out.logic_wire = self.wire
 
         out = PinItem(self, is_output=True)
+        out.logic_wire = self.wire
 
         out.setPos(self.pixmap().width(), 20)
 
         self.output_pins = [out]
+
 
     def mousePressEvent(self, event):
 

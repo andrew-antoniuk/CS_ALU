@@ -6,7 +6,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtGui
-from code import Ui_Simulator
+from _code import Ui_Simulator
 from items import CircuitScene
 
 class SimulatorWindow(QMainWindow):
