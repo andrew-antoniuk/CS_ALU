@@ -89,7 +89,7 @@ class Ui_Simulator(object):
             self.listWidget.addItem(item)
 
         # Complex Block Icons
-        complex_icons = ["images/bus_merger2.png", "images/bus_ripper2.png", "images/alu.png"]
+        complex_icons = ["images/alu.png"]
         for path in complex_icons:
             item = QtWidgets.QListWidgetItem()
             icon = QtGui.QIcon()
@@ -207,10 +207,6 @@ class Ui_Simulator(object):
         item = self.listWidget.item(14)
         item.setText(_translate("Simulator", "-------------------------"))
         item = self.listWidget.item(15)
-        item.setText(_translate("Simulator", "Bus merger"))
-        item = self.listWidget.item(16)
-        item.setText(_translate("Simulator", "Bus ripper"))
-        item = self.listWidget.item(17)
         item.setText(_translate("Simulator", "ALU"))
         self.listWidget.setSortingEnabled(__sortingEnabled)
 

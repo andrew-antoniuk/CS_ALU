@@ -637,13 +637,9 @@ class ALU(Gate):
         s2 = f"{wire_in8}{wire_in7}{wire_in6}{wire_in5}"
         op = f"{wire_op2}{wire_op1}"
 
-        (wire_out1, wire_out2, wire_out3, wire_out4), _ = compute(s1, s2, op)
-        wire_out4 = wire_out4 == "1"
-        wire_out3 = wire_out3 == "1"
-        wire_out2 = wire_out2 == "1"
-        wire_out1 = wire_out1 == "1"
+        result, _ = compute(s1, s2, op)
 
-        x = (wire_out1, wire_out2, wire_out3, wire_out4)
+        x = tuple(bit == "1" for bit in reversed(result))
 
         for k in range(4):
             self.output_w[k].status = x[k]
