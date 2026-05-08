@@ -60,6 +60,16 @@ class Component:
         self.position = (0, 0)
         self.label = "COMP"
 
+    def to_dict(self):
+
+        """
+        Serializer for saving the circuit into the file
+        """
+
+        x, y = self.position
+
+        return {"type": self.label, "id": self.id, "position": [x, y]}
+
 class Wire(Component):
 
     """
@@ -93,6 +103,12 @@ class Wire(Component):
         # Notify all connected gates that the signal has changed
         for gate in self.destinations:
             gate.update()
+
+    def to_dict(self):
+        if len(self.destinations) == 2:
+            gate1, gate2 = self.destinations
+            return {"from": gate1.id, "to": gate2.id}
+        return None
 
 class Gate(Component):
 

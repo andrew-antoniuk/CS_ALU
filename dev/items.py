@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QBrush, QPen, QPixmap
 from PyQt5.QtCore import Qt, QLineF, QTimer
-from data import Wire, AND, OR
+from data import Wire, AND, OR, Switch
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -58,6 +58,9 @@ class PinItem(QGraphicsEllipseItem):
 
         for wire in self.connected_wires:
             wire.update_state()
+
+        if not self.is_output and self.parent_gate.gate:
+            self.parent_gate.gate.update()
 
     def mousePressEvent(self, event):
 
@@ -246,7 +249,7 @@ class CircuitScene(QGraphicsScene):
         self.temp_wire = None
         self.start_pin = None
         self.current_tool = None
-
+        self.pending_wire_pin = None
         self.timer = QTimer()
 
         self.timer.timeout.connect(
@@ -254,7 +257,6 @@ class CircuitScene(QGraphicsScene):
         )
 
         self.timer.start(50)
-
 
     def start_wire(self, pin):
 
@@ -280,6 +282,10 @@ class CircuitScene(QGraphicsScene):
 
             item = LedItem()
 
+        elif self.current_tool == "OR":
+
+            item = OrGateItem()
+
         else:
             super().mousePressEvent(event)
             return
@@ -287,11 +293,13 @@ class CircuitScene(QGraphicsScene):
         item.setPos(event.scenePos())
 
         self.addItem(item)
+        self.current_tool = None
+
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
 
         if self.temp_wire:
-
             self.temp_wire.update_end(event.scenePos())
 
         super().mouseMoveEvent(event)
@@ -300,10 +308,7 @@ class CircuitScene(QGraphicsScene):
 
         if self.temp_wire:
 
-            item = self.itemAt(
-                event.scenePos(),
-                self.views()[0].transform()
-            )
+            item = self.itemAt(event.scenePos(), self.views()[0].transform())
 
             if isinstance(item, PinItem):
 
@@ -325,6 +330,27 @@ class CircuitScene(QGraphicsScene):
             self.start_pin = None
 
         super().mouseReleaseEvent(event)
+
+    # def mousePressEvent(self, event):
+
+    #     item = self.itemAt(event.scenePos(), self.views()[0].transform())
+
+    #     if isinstance(item, PinItem):
+
+    #         if self.pending_wire_pin:
+
+    #             wire = WireItem(self.pending_wire_pin, item)
+
+    #             self.addItem(wire)
+
+    #             self.removeItem(self.temp_wire)
+
+    #             self.temp_wire = None
+    #             self.pending_wire_pin = None
+
+    #     super().mousePressEvent(event)
+
+
 
     def cancel_wire(self):
 
@@ -355,18 +381,22 @@ class SwitchItem(GateItem):
 
     def __init__(self):
 
+        self.wire = Wire()
+        self.logic = Switch(False, self.wire)
+
         super().__init__(
             None,
-            "images/toggle.png"
+            "images/icons8-toggle-on-90.png"
         )
+
+        # self.update_visual()
 
         self.state = 0
 
     def create_pins(self):
-        logic_wire = Wire()
+        out.logic_wire = self.wire
 
         out = PinItem(self, is_output=True)
-        out.logic_wire = logic_wire
 
         out.setPos(self.pixmap().width(), 20)
 
