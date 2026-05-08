@@ -38,17 +38,36 @@ class SimulatorWindow(QMainWindow):
 
         text = item.text()
 
-        if text == "AND Gate":
-            self.scene.current_tool = "AND"
+        match text:
+            case "NOT Gate":
+                self.scene.current_tool = "NOT"
 
-        elif text == "OR Gate":
-            self.scene.current_tool = "OR"
+            case "BUF Gate":
+                self.scene.current_tool = "BUF"
 
-        elif text == "Switch":
-            self.scene.current_tool = "SWITCH"
+            case "AND Gate":
+                self.scene.current_tool = "AND"
 
-        elif text == "Bulb":
-            self.scene.current_tool = "LED"
+            case "OR Gate":
+                self.scene.current_tool = "OR"
+
+            case "NOR Gate":
+                self.scene.current_tool = "NOR"
+
+            case "XNOR Gate":
+                self.scene.current_tool = "XNOR"
+
+            case "XOR Gate":
+                self.scene.current_tool = "XOR"
+
+            case "NAND Gate":
+                self.scene.current_tool = "NAND"
+
+            case "Switch":
+                self.scene.current_tool = "SWITCH"
+
+            case "Bulb":
+                self.scene.current_tool = "LED"
 
     def reset_tool(self):
 

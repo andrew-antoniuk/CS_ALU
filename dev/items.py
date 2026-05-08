@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QBrush, QPen, QPixmap
 from PyQt5.QtCore import Qt, QLineF, QTimer
-from data import Wire, AND, OR, Switch
+from data import Wire, AND, OR, NAND, XOR, NOT, BUF, NOR, XNOR, Switch
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -35,7 +35,8 @@ class PinItem(QGraphicsEllipseItem):
         self.is_output = is_output
 
         self.connected_wires = []
-
+        self.setAcceptHoverEvents(True)
+        self.setZValue(10)
         self.state = 0
         self.logic_wire = None
         self.setPen(QPen(Qt.black, 1))
@@ -59,17 +60,29 @@ class PinItem(QGraphicsEllipseItem):
         for wire in self.connected_wires:
             wire.update_state()
 
-        if not self.is_output and self.parent_gate.gate:
+        if not self.is_output and hasattr(self.parent_gate, "gate") and self.parent_gate.gate:
             self.parent_gate.gate.update()
+
+        if not self.is_output and hasattr(self.parent_gate, "output_pins"):
+            for pin in self.parent_gate.output_pins:
+                if pin.logic_wire:
+                    pin.state = pin.logic_wire.status
+                    pin.update_color()
 
     def mousePressEvent(self, event):
 
-        if not self.is_output:
-            return
-
         scene = self.scene()
 
-        scene.start_wire(self)
+        if scene.start_pin is None:
+
+            if not self.is_output:
+                return
+
+            scene.start_wire(self)
+
+        else:
+
+            scene.finish_wire(self)
 
         super().mousePressEvent(event)
 
@@ -81,6 +94,7 @@ class WireItem(QGraphicsLineItem):
 
         self.start_pin = start_pin
         self.end_pin = end_pin
+        self.setZValue(-1)
 
         self.start_pin.connected_wires.append(self)
 
@@ -114,7 +128,7 @@ class WireItem(QGraphicsLineItem):
 
 class GateItem(QGraphicsPixmapItem):
 
-    def __init__(self, gate, image_path):
+    def __init__(self, gate, image_path, label=""):
 
         super().__init__()
 
@@ -123,7 +137,9 @@ class GateItem(QGraphicsPixmapItem):
         pixmap = QPixmap(image_path)
 
         self.setPixmap(pixmap)
+        self.label_item = QGraphicsTextItem(label, self)
 
+        self.label_item.setDefaultTextColor(Qt.black)
         self.input_pins = []
         self.output_pins = []
 
@@ -132,6 +148,15 @@ class GateItem(QGraphicsPixmapItem):
         self.setFlag(self.ItemIsMovable)
         self.setFlag(self.ItemIsSelectable)
         self.setFlag(self.ItemSendsGeometryChanges)
+
+        text_width = self.label_item.boundingRect().width()
+
+        pixmap_width = self.pixmap().width()
+
+        self.label_item.setPos(
+            (pixmap_width - text_width) / 2,
+            self.pixmap().height()
+        )
 
     def create_pins(self):
         pass
@@ -147,13 +172,82 @@ class GateItem(QGraphicsPixmapItem):
 
         return super().itemChange(change, value)
 
+class NotGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-not-96.png",
+            "NOT"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+
+        wire1 = Wire()
+        wire_out = Wire()
+
+        self.gate = NOT(
+            [wire1],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1]
+        self.output_pins = [out]
+
+class BufGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-buffer-96.png",
+            "BUF"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+
+        wire1 = Wire()
+        wire_out = Wire()
+
+        self.gate = BUF(
+            [wire1],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1]
+        self.output_pins = [out]
+
 class AndGateItem(GateItem):
 
     def __init__(self):
 
         super().__init__(
             None,
-            "images/icons8-logic-gate-and-96.png"
+            "images/icons8-logic-gate-and-96.png",
+            "AND"
         )
 
     def create_pins(self):
@@ -190,7 +284,8 @@ class OrGateItem(GateItem):
 
         super().__init__(
             None,
-            "images/icons8-logic-gate-or-96.png"
+            "images/icons8-logic-gate-or-96.png",
+            "OR"
         )
 
     def create_pins(self):
@@ -221,6 +316,239 @@ class OrGateItem(GateItem):
         self.input_pins = [in1, in2]
         self.output_pins = [out]
 
+class NorGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-nor-96.png",
+            "NOR"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+        in2 = PinItem(self)
+
+        wire1 = Wire()
+        wire2 = Wire()
+        wire_out = Wire()
+
+        self.gate = NOR(
+            [wire1, wire2],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        in2.logic_wire = wire2
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+        in2.setPos(0, 45)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1, in2]
+        self.output_pins = [out]
+
+class XnorGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-xnor-96.png",
+            "XNOR"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+        in2 = PinItem(self)
+
+        wire1 = Wire()
+        wire2 = Wire()
+        wire_out = Wire()
+
+        self.gate = XNOR(
+            [wire1, wire2],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        in2.logic_wire = wire2
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+        in2.setPos(0, 45)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1, in2]
+        self.output_pins = [out]
+
+class XorGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-xor-96.png",
+            "XOR"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+        in2 = PinItem(self)
+
+        wire1 = Wire()
+        wire2 = Wire()
+        wire_out = Wire()
+
+        self.gate = XOR(
+            [wire1, wire2],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        in2.logic_wire = wire2
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+        in2.setPos(0, 45)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1, in2]
+        self.output_pins = [out]
+
+class NandGateItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/icons8-logic-gate-nand-96.png",
+            "NAND"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+        in2 = PinItem(self)
+
+        wire1 = Wire()
+        wire2 = Wire()
+        wire_out = Wire()
+
+        self.gate = NAND(
+            [wire1, wire2],
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+
+        in1.logic_wire = wire1
+        in2.logic_wire = wire2
+        out.logic_wire = wire_out
+
+        in1.setPos(0, 15)
+        in2.setPos(0, 45)
+
+        out.setPos(self.pixmap().width(), 30)
+
+        self.input_pins = [in1, in2]
+        self.output_pins = [out]
+
+class SwitchItem(GateItem):
+
+    def __init__(self):
+
+        self.wire = Wire()
+        self.logic = Switch(False, self.wire)
+
+        super().__init__(
+            None,
+            "images/icons8-toggle-off-90.png"
+        )
+
+        # self.update_visual()
+
+        self.state = 0
+
+    def create_pins(self):
+
+        out = PinItem(self, is_output=True)
+        out.logic_wire = self.wire
+
+        out.setPos(self.pixmap().width(), 20)
+
+        self.output_pins = [out]
+
+
+    def mousePressEvent(self, event):
+
+        self.state ^= 1
+
+        self.output_pins[0].set_state(self.state)
+
+        if self.state:
+            self.setPixmap(QPixmap("images/icons8-toggle-on-90.png"))
+        else:
+            self.setPixmap(QPixmap("images/icons8-toggle-off-90.png"))
+
+        super().mousePressEvent(event)
+
+class LedItem(GateItem):
+    def __init__(self):
+        # Initialize with the "off" image by default
+        super().__init__(
+            None,
+            "images/icons8-light-96.png",
+            "LED"
+        )
+        self.state = 0
+        self.refresh()
+
+    def create_pins(self):
+        # LEDs only have an input pin
+        in1 = PinItem(self, is_output=False)
+
+        self.input_wire = Wire()
+        in1.logic_wire = self.input_wire
+
+        in1.setPos(-6, self.pixmap().height() / 2 - 6)
+        self.input_pins = [in1]
+        self.output_pins = []
+
+    def refresh(self):
+        """
+        Updates the visual representation based on the input pin's state.
+        """
+        # Get state from the input pin
+        new_state = self.input_pins[0].state
+
+        if self.state != new_state:
+            self.state = new_state
+            image_path = "images/icons8-light-on-96.png" if self.state else "images/icons8-light-96.png"
+            self.setPixmap(QPixmap(image_path))
+
+    def set_state(self, value):
+        """
+        Explicitly set state and refresh visual.
+        """
+        if self.input_pins:
+            self.input_pins[0].state = value
+        self.refresh()
+
 class TempWire(QGraphicsLineItem):
 
     def __init__(self, start_pos):
@@ -249,7 +577,6 @@ class CircuitScene(QGraphicsScene):
         self.temp_wire = None
         self.start_pin = None
         self.current_tool = None
-        self.pending_wire_pin = None
         self.timer = QTimer()
 
         self.timer.timeout.connect(
@@ -270,25 +597,40 @@ class CircuitScene(QGraphicsScene):
 
     def mousePressEvent(self, event):
 
-        if self.current_tool == "AND":
+        match self.current_tool:
+            case "NOT":
+                item = NotGateItem()
 
-            item = AndGateItem()
+            case "BUF" | "BUFFER":
+                item = BufGateItem()
 
-        elif self.current_tool == "SWITCH":
+            case "AND":
+                item = AndGateItem()
 
-            item = SwitchItem()
+            case "OR":
+                item = OrGateItem()
 
-        elif self.current_tool == "LED":
+            case "NOR":
+                item = NorGateItem()
 
-            item = LedItem()
+            case "XNOR":
+                item = XnorGateItem()
 
-        elif self.current_tool == "OR":
+            case "XOR":
+                item = XorGateItem()
 
-            item = OrGateItem()
+            case "NAND":
+                item = NandGateItem()
 
-        else:
-            super().mousePressEvent(event)
-            return
+            case "SWITCH":
+                item = SwitchItem()
+
+            case "LED":
+                item = LedItem()
+
+            case _:
+                super().mousePressEvent(event)
+                return
 
         item.setPos(event.scenePos())
 
@@ -306,51 +648,7 @@ class CircuitScene(QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
 
-        if self.temp_wire:
-
-            item = self.itemAt(event.scenePos(), self.views()[0].transform())
-
-            if isinstance(item, PinItem):
-
-                if item == self.start_pin:
-                    self.cancel_wire()
-                    return
-
-                if item.is_output == self.start_pin.is_output:
-                    self.cancel_wire()
-                    return
-
-                wire = WireItem(self.start_pin, item)
-                item.logic_wire = self.start_pin.logic_wire
-                self.addItem(wire)
-
-            self.removeItem(self.temp_wire)
-
-            self.temp_wire = None
-            self.start_pin = None
-
         super().mouseReleaseEvent(event)
-
-    # def mousePressEvent(self, event):
-
-    #     item = self.itemAt(event.scenePos(), self.views()[0].transform())
-
-    #     if isinstance(item, PinItem):
-
-    #         if self.pending_wire_pin:
-
-    #             wire = WireItem(self.pending_wire_pin, item)
-
-    #             self.addItem(wire)
-
-    #             self.removeItem(self.temp_wire)
-
-    #             self.temp_wire = None
-    #             self.pending_wire_pin = None
-
-    #     super().mousePressEvent(event)
-
-
 
     def cancel_wire(self):
 
@@ -359,80 +657,72 @@ class CircuitScene(QGraphicsScene):
         self.temp_wire = None
         self.start_pin = None
 
+    def keyPressEvent(self, event):
+
+        if event.key() == Qt.Key_Delete:
+            for item in self.selectedItems():
+                pins = []
+                if hasattr(item, "input_pins"):
+                    pins.extend(item.input_pins)
+
+                if hasattr(item, "output_pins"):
+                    pins.extend(item.output_pins)
+
+                if hasattr(item, "input_pin"): # For the original LedItem structure
+                    pins.append(item.input_pin)
+
+                # Remove all wires connected to these pins from the scene
+                for pin in pins:
+                    for wire in pin.connected_wires[:]:
+                        if wire.scene():
+                            self.removeItem(wire)
+
+                        other_pin = wire.end_pin if wire.start_pin == pin else wire.start_pin
+
+                        if other_pin and wire in other_pin.connected_wires:
+                            other_pin.connected_wires.remove(wire)
+
+                # remove the gate or the selected wire itself
+                self.removeItem(item)
+
     def update_simulation(self):
 
         for item in self.items():
+            # Handle Gates and LEDs (since LedItem now inherits from GateItem)
 
             if isinstance(item, GateItem):
 
                 for pin in item.input_pins + item.output_pins:
-
                     if pin.logic_wire:
-
                         pin.state = pin.logic_wire.status
-
                         pin.update_color()
 
-            elif isinstance(item, LedItem):
+                if isinstance(item, LedItem):
+                    item.refresh()
 
-                item.refresh()
+            elif isinstance(item, WireItem):
+                item.update_state()
 
-class SwitchItem(GateItem):
+    def finish_wire(self, end_pin):
 
-    def __init__(self):
+        if not self.start_pin:
+            return
 
-        self.wire = Wire()
-        self.logic = Switch(False, self.wire)
+        if end_pin == self.start_pin:
+            self.cancel_wire()
+            return
 
-        super().__init__(
-            None,
-            "images/icons8-toggle-on-90.png"
-        )
+        if end_pin.is_output == self.start_pin.is_output:
+            self.cancel_wire()
+            return
 
-        # self.update_visual()
+        wire = WireItem(self.start_pin, end_pin)
 
-        self.state = 0
+        end_pin.logic_wire = self.start_pin.logic_wire
 
-    def create_pins(self):
+        self.addItem(wire)
 
-        out = PinItem(self, is_output=True)
-        out.logic_wire = self.wire
+        self.removeItem(self.temp_wire)
 
-        out.setPos(self.pixmap().width(), 20)
-
-        self.output_pins = [out]
-
-
-    def mousePressEvent(self, event):
-
-        self.state ^= 1
-
-        self.output_pins[0].set_state(self.state)
-
-        super().mousePressEvent(event)
-
-class LedItem(QGraphicsEllipseItem):
-
-    def __init__(self):
-
-        super().__init__(0, 0, 30, 30)
-
-        self.input_pin = PinItem(self)
-
-        self.input_pin.setPos(-10, 10)
-        self.input_pin.logic_wire = Wire()
-        self.refresh()
-
-    def refresh(self):
-
-        signal = self.input_pin.state
-
-        color = Qt.green if signal else Qt.darkRed
-
-        self.setBrush(QBrush(color))
-
-    def set_state(self, value):
-
-        self.input_pin.state = value
-
-        self.refresh()
+        self.temp_wire = None
+        self.start_pin = None

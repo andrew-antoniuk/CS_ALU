@@ -282,6 +282,25 @@ class NOT(Gate):
         wire = bool(self.input_w[0].status)
         return not wire
 
+class BUF(Gate):
+
+    """
+    BUF Gate
+    """
+
+    def __init__(self, w_in, w_out=None):
+        super().__init__(w_in, w_out)
+        self.label = "BUF"
+
+    def evaluate(self):
+
+        """
+        Evaluate output signal value
+        """
+
+        wire = bool(self.input_w[0].status)
+        return wire
+
 class AND(Gate):
 
     """
