@@ -66,6 +66,12 @@ class SimulatorWindow(QMainWindow):
             case "Switch":
                 self.scene.current_tool = "SWITCH"
 
+            case "ZERO":
+                self.scene.current_tool = "ZERO"
+
+            case "ONE":
+                self.scene.current_tool = "ONE"
+
             case "Bulb":
                 self.scene.current_tool = "LED"
 

@@ -127,7 +127,7 @@
        </item>
        <item>
         <property name="text">
-         <string>Low voltage</string>
+         <string>ZERO</string>
         </property>
         <property name="icon">
          <iconset>
@@ -136,7 +136,7 @@
        </item>
        <item>
         <property name="text">
-         <string>High voltage</string>
+         <string>ONE</string>
         </property>
         <property name="icon">
          <iconset>

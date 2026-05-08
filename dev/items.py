@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QBrush, QPen, QPixmap
 from PyQt5.QtCore import Qt, QLineF, QTimer
-from data import Wire, AND, OR, NAND, XOR, NOT, BUF, NOR, XNOR, Switch
+from data import Wire, AND, OR, NAND, XOR, NOT, BUF, NOR, XNOR, ZERO, ONE, Switch
 
 class PinItem(QGraphicsEllipseItem):
 
@@ -468,6 +468,56 @@ class NandGateItem(GateItem):
         self.input_pins = [in1, in2]
         self.output_pins = [out]
 
+class ZeroItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/0.png",
+            "ZERO"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+
+        wire_out = Wire()
+
+        self.gate = ZERO(
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+        out.logic_wire = wire_out
+        out.setPos(self.pixmap().width(), 30)
+        self.output_pins = [out]
+
+class OneItem(GateItem):
+
+    def __init__(self):
+
+        super().__init__(
+            None,
+            "images/1.png",
+            "ONE"
+        )
+
+    def create_pins(self):
+
+        in1 = PinItem(self)
+
+        wire_out = Wire()
+
+        self.gate = ONE(
+            wire_out
+        )
+
+        out = PinItem(self, is_output=True)
+        out.logic_wire = wire_out
+        out.setPos(self.pixmap().width(), 30)
+        self.output_pins = [out]
+
 class SwitchItem(GateItem):
 
     def __init__(self):
@@ -624,6 +674,12 @@ class CircuitScene(QGraphicsScene):
 
             case "SWITCH":
                 item = SwitchItem()
+
+            case "ZERO":
+                item = ZeroItem()
+
+            case "ONE":
+                item = OneItem()
 
             case "LED":
                 item = LedItem()

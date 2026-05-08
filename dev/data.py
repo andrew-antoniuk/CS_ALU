@@ -196,6 +196,66 @@ class Switch(Component):
         if self.wire:
             self.wire.status = self._status
 
+class ONE(Component):
+
+    """
+    Switcher, beginning of the logical chain
+    """
+
+    def __init__(self, wire = None):
+        super().__init__()
+        self._status = True
+        self._wire = wire
+        self.label = "ONE"
+        # Initialize the conductor with an initial value
+        if self._wire:
+            self._wire.status = self._status
+
+    @property
+    def wire(self):
+
+        """
+        Docstring for wire
+        """
+
+        return self._wire
+
+    @wire.setter
+    def wire(self, w):
+        self._wire = w
+        if self._wire:
+            self._wire.status = self._status
+
+class ZERO(Component):
+
+    """
+    Switcher, beginning of the logical chain
+    """
+
+    def __init__(self, wire = None):
+        super().__init__()
+        self._status = False
+        self._wire = wire
+        self.label = "ZERO"
+        # Initialize the conductor with an initial value
+        if self._wire:
+            self._wire.status = self._status
+
+    @property
+    def wire(self):
+
+        """
+        Docstring for wire
+        """
+
+        return self._wire
+
+    @wire.setter
+    def wire(self, w):
+        self._wire = w
+        if self._wire:
+            self._wire.status = self._status
+
 class Out(Component):
 
     """
